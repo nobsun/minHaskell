@@ -1,0 +1,106 @@
+name:                minHaskell
+version:             0.1.0.0
+github:              nobsun/minHaskell
+license:             BSD3
+author:              Nobuo Yamashita
+maintainer:          nobsun@gmail.com
+copyright:           © 2026, Nobuo Yamashita
+
+extra-source-files:
+- README.md
+- ChangeLog.md
+
+# Metadata used when publishing your package
+# synopsis:            Short description of your package
+# category:            Experiment
+
+# To avoid duplicated efforts in documentation and dealing with the
+# complications of embedding Haddock markup inside cabal files, it is
+# common to point users to the README.md file.
+description:         Please see the README on GitHub at <https://github.com/nobsun/minHaskell#readme>
+
+dependencies:
+- base >= 4.7 && < 5
+- unicode-show
+- bytestring
+- utf8-string
+- time
+- hspec
+- main-tester
+- doctest
+- aeson
+- array
+- containers
+- mtl
+- free
+- extra
+- recursion-schemes
+- vector
+- directory
+- filepath
+- split
+- haskeline
+- text
+- prettyprinter
+- random
+- stm
+
+language: GHC2024
+
+default-extensions:
+- ImplicitParams
+- ImportQualifiedPost
+- LambdaCase
+- LexicalNegation
+- MultiWayIf
+- NPlusKPatterns
+- OverloadedStrings
+- DataKinds
+- PolyKinds
+- NoStarIsType
+- TypeFamilyDependencies
+- UndecidableInstances
+
+ghc-options:
+- -Wall
+- -Wno-unticked-promoted-constructors
+- -Wno-unused-imports
+- -Wno-unused-top-binds
+- -Wno-orphans
+- -Wno-x-partial
+
+library:
+  source-dirs: src
+
+executables:
+  add-entry:
+    main:               Main.hs
+    source-dirs:        app/zzz/add-entry
+    ghc-options:
+    - -rtsopts
+    dependencies:
+    - minHaskell
+
+  minHaskell:
+    main:               Main.hs
+    source-dirs:        app
+    ghc-options:
+    - -rtsopts
+    dependencies:
+    - minHaskell
+
+tests:
+  minHaskell-test:
+    main:                spec.hs
+    source-dirs:         test
+    dependencies:
+    - minHaskell
+    - hspec
+    - main-tester
+
+  minHaskell-doctest:
+    main:                doctests.hs
+    source-dirs:         test
+    dependencies:
+    - minHaskell
+    - doctest

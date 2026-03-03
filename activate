@@ -1,0 +1,8 @@
+#!/bin/bash
+
+ghcup set hls 2.13.0.0
+ghcup set ghc 9.10.3
+
+chmod u+x building executing ghcing resetting setting
+
+stack build

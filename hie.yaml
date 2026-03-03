@@ -1,0 +1,22 @@
+cradle:
+  stack:
+    - path: "./src"
+      component: "minHaskell:lib"
+
+    - path: "./app/zzz/add-entry/Main.hs"
+      component: "minHaskell:exe:add-entry"
+
+    - path: "./app/zzz/add-entry/Paths_minHaskell.hs"
+      component: "minHaskell:exe:add-entry"
+
+    - path: "./app/Main.hs"
+      component: "minHaskell:exe:minHaskell"
+
+    - path: "./app/Paths_minHaskell.hs"
+      component: "minHaskell:exe:minHaskell"
+
+    - path: "./test"
+      component: "minHaskell:test:minHaskell-doctest"
+
+    - path: "./test"
+      component: "minHaskell:test:minHaskell-test"

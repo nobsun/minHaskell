@@ -1,0 +1,8 @@
+.stack-work/
+minHaskell.cabal
+*.log
+.curname
+core
+*.hi
+*.o
+*~
