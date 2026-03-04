@@ -143,10 +143,10 @@ deAnnScDefn = \ case
 deAnnExpr :: AnnExpr a ann -> Expr a
 deAnnExpr = cataAnnExpr phi where
     phi = \ case
-        _ F.:< ENumF n       -> ENum n
         _ F.:< EVarF v       -> EVar v
+        _ F.:< ENumF n       -> ENum n
         _ F.:< EConstrF t a  -> EConstr t a
         _ F.:< EApF e1 e2    -> EAp e1 e2
-        _ F.:< ECaseF e alts -> ECase e alts
         _ F.:< ELetF bs e    -> ELet bs e
+        _ F.:< ECaseF e alts -> ECase e alts
         _ F.:< ELamF xs e    -> ELam xs e
