@@ -25,13 +25,14 @@ import Prettyprinter
 import Prettyprinter.Util
 
 import Core.Language
+import Core.Bop
 
 pprExpr :: (a -> Doc ann) -> Expr a -> Doc ann
 pprExpr ppr = paraExpr phi where
     phi = \ case
         EVarF v      -> pretty v
         ENumF n      -> pretty n
-        EConstrF t v -> "Pack" <> braces (surround comma (pretty t) (pretty v))
+        EConstrF t a -> "Pack" <> braces (surround comma (pretty t) (pretty a))
         EApF e1 e2   -> pap1 e1 <+> pap2 e2
         ELetF bs body
             -> "let" <> hardline 
@@ -65,6 +66,8 @@ pprCore = pretty
 
 pprCoreExpr :: CoreExpr -> Doc ann
 pprCoreExpr = pprExpr pprCore
+
+
 
 {- |
 >>> vsep $ pprCoreExpr . sample <$> [1 .. 8]
