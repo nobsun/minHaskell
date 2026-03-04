@@ -44,7 +44,6 @@ pprExpr ppr = paraExpr phi where
             <> indent 4 (vsep (punctuate semi (map (palt ppr) alts)))
         ELamF xs e -> group ("λ" <+> hsep (map ppr xs) <+> "→") <+> snd e
 
-
 pap1 :: (Expr a, Doc ann) -> Doc ann
 pap1 (e,d) = case e of
     ELet _ _  -> parens d
@@ -59,7 +58,7 @@ pap2 (e,d) = case e of
     _      -> parens d
 
 palt :: (a -> Doc ann) -> (Int, [a], (Expr a, Doc ann)) -> Doc ann
-palt ppr (t,xs,(_,d)) = angles (pretty t) <+> hsep (ppr <$> xs) <+> "->" <+> d
+palt ppr (t,xs,(_,d)) = angles (pretty t) <+> hsep (ppr <$> xs) <+> "→" <+> d
 
 pprCore :: Name -> Doc ann
 pprCore = pretty
@@ -82,11 +81,12 @@ let
 in
     Pack{2,2} x xs
 case f (g x) of
-    <1>  -> 0;
-    <2> h hs -> succ (length hs)
+    <1>  → 0;
+    <2> h hs → succ (length hs)
 λ f g x → case f (g x) of
-    <1>  -> 0;
-    <2> h hs -> succ (length hs)
+    <1>  → 0;
+    <2> h hs → succ (length hs)
+
 -}
 sample :: Int -> CoreExpr
 sample i = fromMaybe (ENum 404) (lookup i sampleExprs)
