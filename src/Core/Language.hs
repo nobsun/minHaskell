@@ -98,6 +98,9 @@ apoExpr = apo
 hyloExpr :: (ExprF a c -> c) -> (b -> ExprF a b) -> b -> c
 hyloExpr = hylo
 
+histoExpr :: (ExprF a (AnnExpr a b) -> b) -> Expr a -> b
+histoExpr = histo
+
 {- AnnProgram -}
 
 type AnnProgram a ann = [AnnScDefn a ann]
@@ -150,3 +153,18 @@ deAnnExpr = cataAnnExpr phi where
         _ F.:< ELetF bs e    -> ELet bs e
         _ F.:< ECaseF e alts -> ECase e alts
         _ F.:< ELamF xs e    -> ELam xs e
+
+class VarRep a where
+    vname :: a -> Name
+
+instance VarRep Name where
+    vname :: Name -> Name
+    vname = id
+
+instance VarRep (a, Name) where
+    vname :: (a, Name) -> Name
+    vname = snd
+
+instance VarRep (Name, a) where
+    vname :: (Name, a) -> Name
+    vname = fst
