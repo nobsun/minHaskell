@@ -15,6 +15,7 @@
 module Core.Bop
     where
 
+import Data.Maybe
 import Data.Map qualified as M
 import Data.Set qualified as S
 
@@ -28,13 +29,14 @@ isBopString :: String -> Bool
 isBopString = all isAscSymbol 
 
 data Fixity
-    = InfixUnknown
-    | Infix
+    = Infix
     | InfixL
     | InfixR
     deriving (Eq, Show, Read)
 
-preludeOperators :: M.Map String (Int, Fixity)
+type BopInfo = (Int, Fixity)
+
+preludeOperators :: M.Map String BopInfo
 preludeOperators = M.fromList 
     [ ("!!", (9, InfixL))
     , ("." , (9, InfixR))
@@ -68,19 +70,27 @@ preludeOperators = M.fromList
     , ("`seq`", (0, InfixL))
     ]
 
+operators :: M.Map String BopInfo
+operators = M.unions [preludeOperators]
+
 isBop :: String -> Bool
 isBop op = M.member op 
-         $ M.unions [preludeOperators]
+         $ operators
+
+bopInfoOf :: String -> BopInfo
+bopInfoOf op
+    = fromMaybe (error $ "bopInfoOf: unknown operator" ++ op)
+    $ operators M.!? op
 
 precedenceOf :: String -> Int
 precedenceOf op 
     = maybe (error $ "precedenceOf: unknown operator " ++ show op) fst 
-    $ preludeOperators M.!? op
+    $ operators M.!? op
 
 fixityOf :: String -> Fixity
 fixityOf op
     = maybe (error $ "fixityOf: unknown operator" ++ show op) snd 
-    $ preludeOperators M.!? op
+    $ operators M.!? op
 
 {- ^
 >>> isBop "++"
