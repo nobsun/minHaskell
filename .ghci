@@ -4,3 +4,5 @@ import Text.Show.Unicode
 :set -XGHC2024 -XLambdaCase -XMultiWayIf -XNPlusKPatterns -XOverloadedStrings -XLexicalNegation
 :set -XDataKinds -XPolyKinds -XNoStarIsType -XTypeFamilyDependencies -XUndecidableInstances
 :set -XImplicitParams -XNoFieldSelectors -XDuplicateRecordFields -XOverloadedRecordDot
+:set -Wno-x-partial
+

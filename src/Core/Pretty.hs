@@ -12,6 +12,7 @@
 {-# LANGUAGE DataKinds, PolyKinds, NoStarIsType, TypeFamilyDependencies #-}
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE OverloadedRecordDot, NoFieldSelectors, DuplicateRecordFields #-}
+{-# OPTIONS_GHC -Wno-x-partial #-}
 module Core.Pretty
     where
 
@@ -31,6 +32,30 @@ import Prettyprinter.Util
 import Core.Language
 import Core.Bop
 
+pprProgram :: forall a. VarRep a
+           => forall ann. (a -> Doc ann)
+           -> Program a -> Doc ann
+pprProgram ppr 
+    = align
+    . vsep
+    . punctuate semi
+    . map (pprScDefn ppr)
+
+pprCoreProgram :: CoreProgram -> Doc ann
+pprCoreProgram = pprProgram pprCore 
+
+pprScDefn :: forall a. VarRep a
+          => forall ann. (a -> Doc ann)
+          -> ScDefn a -> Doc ann
+pprScDefn ppr = \ case
+    (name,xs,e) -> group (pretty name <> pprArgs ppr xs)
+               <+> "=" <+> pprExpr ppr e
+
+pprArgs :: (a -> Doc ann) -> [a] -> Doc ann
+pprArgs ppr = \ case
+    [] -> mempty
+    xs -> space <> hsep (map ppr xs)
+
 pprExpr :: forall a. VarRep a 
         => forall ann. (a -> Doc ann) -> Expr a -> Doc ann
 pprExpr ppr = snd . histoExpr phi where
@@ -47,22 +72,19 @@ pprExpr ppr = snd . histoExpr phi where
                                 (o2,do2) :< _
                                     -> (p, doc) where
                                         doc = parens' (p >= o1) do1
-                                            <+> d11
-                                            <+> parens' (p >= o2) do2
+                                           <> softline <> d11 <+> parens' (p >= o2) do2
                         (p,InfixL)  -> case e12 of
                             (o1,do1) :< _ -> case e2 of
                                 (o2,do2) :< _
                                     -> (p, doc) where
                                         doc = parens' (p > o1) do1
-                                            <+> d11
-                                            <+> parens' (p >= o2) do2
+                                           <> softline <> d11 <+> parens' (p >= o2) do2
                         (p,InfixR)  -> case e12 of
                             (o1,do1) :< _ -> case e2 of
                                 (o2,do2) :< _
                                     -> (p, doc) where
                                         doc = parens' (p >= o1) do1
-                                            <+> d11
-                                            <+> parens' (p > o2) do2
+                                           <> softline <> d11 <+> parens' (p > o2) do2
                     | otherwise -> pprEAp e1 e2
                 _ -> pprEAp e1 e2
             _ -> pprEAp e1 e2
@@ -100,7 +122,7 @@ pprExpr ppr = snd . histoExpr phi where
                     doc = pretty bop <+> parens' (o >= q) d2
 
     pprEAp e1 e2 =  case (snd *** snd) (pprFun e1, pprArg e2) of
-        (d1,d2) -> (10 :: Int, d1 <+> d2)
+        (d1,d2) -> (10 :: Int, hang 4 (d1 <> softline <> d2))
 
     pprFun = \ case
         (p,doc) :< _ -> (bool maxBound p (p == 10), parens' (p < 10) doc)
@@ -119,12 +141,12 @@ pprExpr ppr = snd . histoExpr phi where
         . vsep
         . punctuate semi
         . map (\ (t,xs,(_,d) :< _) -> angles (pretty t)
-                                <+> hsep (ppr <$> xs)
+                                <> pprArgs ppr xs
                                 <+> "→" <+> d)
     
     pprELam xs body = (minBound, doc) where
         doc = case body of
-            (_,body') :< _ -> group ("λ" <+> hsep (map ppr xs) <+> "→") <+> body'
+            (_,body') :< _ -> group ("λ" <> pprArgs ppr xs <+> "→") <> softline <> body'
 
 data SectionType d
     = NotSection
@@ -188,11 +210,8 @@ pprBop = \ case
 pprCore :: Name -> Doc ann
 pprCore = pretty
 
-pprCoreExpr :: CoreExpr -> Doc ann
-pprCoreExpr = pprExpr pprCore
-
 {- |
->>> vsep $ pprCoreExpr . sample <$> [1 .. 18]
+>>> vsep $ pprExpr pprCore . sample <$> [1 .. 18]
 x
 7
 Pack{2,2}
@@ -219,6 +238,7 @@ mod
 λ x z → x + y
 λ z y → x + y
 λ z w → x + y
+
 -}
 sample :: Int -> CoreExpr
 sample i = fromMaybe (ENum 404) (lookup i sampleExprs)
@@ -246,3 +266,24 @@ sampleExprs
     , ELam ["z","w"] (EAp (EAp (EVar "+") (EVar "x")) (EVar "y"))
     ]
 
+sampleProgram :: CoreProgram
+sampleProgram
+    = [("main",[], EAp (EVar f) (foldr phi (EConstr 1 0) [1,2,3]))
+      ,(f,xs,rhs)
+      ,(g,[],rhs')]
+    where
+        phi x = EAp (EAp (EVar ":") (ENum x))
+        f   = "length"
+        xs  = ["xs"]
+        rhs = ECase (EVar (head xs)) [(1,[],ENum 0),(2,["h","hs"],EAp (EVar g) (EAp (EVar f) (EVar "hs")))]
+        g   = "succ"
+        rhs' = ELam ["x"] (EAp (EAp (EVar "+") (ENum 1)) (EVar "x"))
+
+{- ^
+>>> pprCoreProgram sampleProgram
+main = length (1 : 2 : 3 : Pack{1,0});
+length xs = case xs of
+    <1> → 0;
+    <2> h hs → succ (length hs);
+succ = (1 +)
+-}
