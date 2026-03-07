@@ -146,7 +146,7 @@ pprExpr ppr = snd . histoExpr phi where
     
     pprELam xs body = (minBound, doc) where
         doc = case body of
-            (_,body') :< _ -> group ("λ" <+> hsep (map ppr xs) <+> "→") <> softline <> body'
+            (_,body') :< _ -> group ("λ" <> pprArgs ppr xs <+> "→") <> softline <> body'
 
 data SectionType d
     = NotSection
